@@ -149,33 +149,6 @@ app_ui = ui.page_fluid(
     )
 )
 
-
-
-    # ui.layout_sidebar(
-    #     ui.sidebar(
-    #         ui.h4("HIV in the specific country"),
-    #         ui.input_select("country", "Country", choices=countries, selected="Vietnam"),
-    #         ui.hr(),
-    #         ui.output_ui("summary_cards")
-    #     ),
-    #     # ✅ MAIN CONTENT LAYOUT DIRECTLY HERE
-    #     ui.div(
-    #         ui.layout_columns(
-    #             ui.output_plot("new_cases_line"),
-    #             ui.output_plot("deaths_line"),
-    #             ui.output_plot("art_coverage_line")
-    #         ),
-    #         ui.hr(),
-    #         ui.h4("Prevalence of HIV by gender (teenager)"),
-    #         ui.input_select("year", "Year", choices=["2019"], selected="2019"),
-    #         ui.output_plot("gender_scatter"),
-    #         ui.hr(),
-    #         ui.h4("HIV distribution across countries"),
-    #         ui.output_plot("world_map")
-    #     )
-    # )
-# )
-
 ###############################################################################
 # Server logic
 def server(input, output, session):
@@ -273,20 +246,6 @@ def server(input, output, session):
             )
         
         return fig
-
-    # @output
-    # @render.plot
-    # def world_map():
-    #     df = df_adult_newly_infected[df_adult_newly_infected["Year"] == 2019]
-    #     return px.scatter_geo(
-    #         df,
-    #         locations="Code",
-    #         color="New infections",
-    #         hover_name="Country",
-    #         size="New infections",
-    #         projection="natural earth",
-    #         title="Adults (15–49) newly infected with HIV (2019)"
-    #     )
 
 ###############################################################################
 # Run the app
