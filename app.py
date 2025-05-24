@@ -16,6 +16,15 @@ df_adult_newly_infected = pd.read_csv("data/adults-newly-infected-with-hiv.csv")
 df_prevalence_male = pd.read_csv("data/prevalence-of-hiv-male-teenager.csv")
 df_prevalence_female = pd.read_csv("data/prevalence-of-hiv-female-teenager.csv")
 
+# df_deaths_new_cases = pd.read_csv("code/data/deaths-and-new-cases-of-hiv.csv")
+# df_art_24 = pd.read_csv("code/data/antiretroviral-therapy-coverage.csv")
+# df_art = pd.read_csv("code/data/antiretroviral-therapy-coverage-among-people-living-with-hiv.csv")
+
+# df_children_newly_infected = pd.read_csv("code/data/children-newly-infected-with-hiv.csv")
+# df_adult_newly_infected = pd.read_csv("code/data/adults-newly-infected-with-hiv.csv")
+
+# df_prevalence_male = pd.read_csv("code/data/prevalence-of-hiv-male-teenager.csv")
+# df_prevalence_female = pd.read_csv("code/data/prevalence-of-hiv-female-teenager.csv")
 ###############################################################################
 # Preprocessing
 # Deaths and new cases dataset
@@ -49,8 +58,6 @@ df_prevalence_male = df_prevalence_male[df_prevalence_male['Country Code'].notna
 df_prevalence_male = df_prevalence_male.rename(columns={
     'Country Name': 'Country',
     'Country Code': 'Code',
-    'Incidence - HIV/AIDS - Sex: Both - Age: All Ages (Number)': 'New Cases',
-    'Deaths - HIV/AIDS - Sex: Both - Age: All Ages (Number)': 'Deaths',
 })
 df_prevalence_male = df_prevalence_male.drop(columns=['Indicator Name', 'Indicator Code'])
 
@@ -58,18 +65,18 @@ df_prevalence_female = df_prevalence_female[df_prevalence_female['Country Code']
 df_prevalence_female = df_prevalence_female.rename(columns={
     'Country Name': 'Country',
     'Country Code': 'Code',
-    'Incidence - HIV/AIDS - Sex: Both - Age: All Ages (Number)': 'New Cases',
-    'Deaths - HIV/AIDS - Sex: Both - Age: All Ages (Number)': 'Deaths',
 })
 df_prevalence_female = df_prevalence_female.drop(columns=['Indicator Name', 'Indicator Code'])
 
-# Reshape the datasets
+# Reshape the datasets (Prevalence of HIV female/male teenager)
+## Male
 df_prevalence_male_reshaped = df_prevalence_male.melt(
     id_vars=['Country', 'Code'], var_name='Year', value_name='Prevalence_male'
 )
 df_prevalence_male_reshaped = df_prevalence_male_reshaped[df_prevalence_male_reshaped['Year'].str.isnumeric()]
 df_prevalence_male_reshaped['Year'] = df_prevalence_male_reshaped['Year'].astype(int)
 df_prevalence_male_reshaped = df_prevalence_male_reshaped.dropna(subset=['Prevalence_male'])
+## Female
 df_prevalence_female_reshaped = df_prevalence_female.melt(
     id_vars=['Country', 'Code'], var_name='Year', value_name='Prevalence_female'
 )
@@ -77,13 +84,56 @@ df_prevalence_female_reshaped = df_prevalence_female_reshaped[df_prevalence_fema
 df_prevalence_female_reshaped['Year'] = df_prevalence_female_reshaped['Year'].astype(int)
 df_prevalence_female_reshaped = df_prevalence_female_reshaped.dropna(subset=['Prevalence_female'])
 
-# List all countries
+# children/adult newly infected with hiv
+df_children_newly_infected = df_children_newly_infected[df_children_newly_infected['Country Code'].notna()]
+df_children_newly_infected = df_children_newly_infected.rename(columns={
+    'Country Name': 'Country',
+    'Country Code': 'Code',
+})
+df_children_newly_infected = df_children_newly_infected.drop(columns=['Indicator Name', 'Indicator Code'])
+
+df_adult_newly_infected = df_adult_newly_infected[df_adult_newly_infected['Country Code'].notna()]
+df_adult_newly_infected = df_adult_newly_infected.rename(columns={
+    'Country Name': 'Country',
+    'Country Code': 'Code',
+})
+df_adult_newly_infected = df_adult_newly_infected.drop(columns=['Indicator Name', 'Indicator Code'])
+
+# Reshape the datasets (children-newly-infected-with-hiv, adults-newly-infected-with-hiv)
+# For children newly infected
+df_children_newly_infected_reshaped = df_children_newly_infected.melt(
+    id_vars=['Country', 'Code'], var_name='Year', value_name='children_newly_infected'
+)
+
+df_children_newly_infected_reshaped = df_children_newly_infected_reshaped[
+    df_children_newly_infected_reshaped['Year'].str.isnumeric()
+]
+df_children_newly_infected_reshaped['Year'] = df_children_newly_infected_reshaped['Year'].astype(int)
+df_children_newly_infected_reshaped = df_children_newly_infected_reshaped.dropna(subset=['children_newly_infected'])
+
+# For adult newly infected
+df_adult_newly_infected_reshaped = df_adult_newly_infected.melt(
+    id_vars=['Country', 'Code'], var_name='Year', value_name='adult_newly_infected'
+)
+df_adult_newly_infected_reshaped = df_adult_newly_infected_reshaped[
+    df_adult_newly_infected_reshaped['Year'].str.isnumeric()
+]
+df_adult_newly_infected_reshaped['Year'] = df_adult_newly_infected_reshaped['Year'].astype(int)
+df_adult_newly_infected_reshaped = df_adult_newly_infected_reshaped.dropna(subset=['adult_newly_infected'])
+
+
+
+# List all countries, years
 countries = sorted(df_deaths_new_cases['Country'].unique())
 
 years_scatter = sorted(df_prevalence_male_reshaped['Year'].unique())
 years_scatter = [str(year) for year in years_scatter]
 
 countries_list = sorted(df_prevalence_male_reshaped['Country'].unique())
+
+years_children = df_children_newly_infected_reshaped['Year'].unique()
+years_adult = df_adult_newly_infected_reshaped['Year'].unique()
+available_years = sorted(set(years_children).union(years_adult))
 
 # ###############################################################################
 # UI layout
@@ -130,8 +180,8 @@ app_ui = ui.page_fluid(
                             width="100%"),
         ),
     ),
-
     ui.hr(),
+    
     ui.h4("Prevalence of HIV by gender (teenager)"),
     ui.layout_columns(
         # Column 1 (1 portion): Both selectors stacked vertically in one card
@@ -146,6 +196,30 @@ app_ui = ui.page_fluid(
             style="width: 100%"
         ),
         col_widths=[3, 7],
+    ),
+    ui.hr(),
+
+    ui.h4("HIV distribution across countries"),
+    ui.layout_columns(
+        ui.column(
+            12,
+            output_widget("geo_map"),
+            ui.input_slider(
+                "year_slider",
+                "Select Year",
+                min=min(available_years),
+                max=max(available_years),
+                value=max(available_years),
+                step=1,
+                width="100%"
+            )
+        ),
+        ui.column(
+            2,
+            ui.h5("Newly infected"),
+            ui.input_radio_buttons("dataset_type", "", {"children": "Children", "adult": "Adult"}),
+            ui.hr()
+        ),
     )
 )
 
@@ -245,6 +319,44 @@ def server(input, output, session):
                 name=input.country_scatter()
             )
         
+        return fig
+    
+    # Reactive dataset selector: children or adult
+    @reactive.Calc
+    def selected_dataset():
+        if input.dataset_type() == "children":
+            return df_children_newly_infected_reshaped, 'children_newly_infected'
+        else:
+            return df_adult_newly_infected_reshaped, 'adult_newly_infected'
+
+    # Render interactive geo map for all countries by selected year
+    @output
+    @render_widget
+    def geo_map():
+        df, value_col = selected_dataset()
+        year = input.year_slider()
+
+        df_year = df[df['Year'] == year]
+
+        # Set the color bar title dynamically
+        colorbar_title = (
+            "Children Newly Infected" if input.dataset_type() == "children" else "Adult Newly Infected"
+        )
+
+        fig = px.choropleth(
+            df_year,
+            locations="Code",
+            color=value_col,
+            hover_name="Country",
+            color_continuous_scale="Reds",
+            title=f"{input.dataset_type().capitalize()} Newly Infected - {year}",
+        )
+        fig.update_layout(
+            margin={"r":0,"t":30,"l":0,"b":0},
+            coloraxis_colorbar=dict(
+                title=colorbar_title
+            )
+        )
         return fig
 
 ###############################################################################

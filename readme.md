@@ -21,3 +21,8 @@ The **final section** provides a global perspective, showcasing the distribution
 In conclusion, these three sections create a comprehensive, interactive dashboard that allows users to analyze the HIV epidemic from multiple perspectives—national, demographic, and global—while using intuitive controls to explore the data in meaningful ways.
 
 ![](assets/viz.png)
+
+## Deployment
+> The dashboard may take a while to load.
+
+![](assets/dashboard.png)
